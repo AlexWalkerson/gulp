@@ -1,0 +1,6 @@
+.hidden-lg {
+	@include hidden-lg();
+}
+.hidden-xs {
+	@include hidden-xs();
+}
