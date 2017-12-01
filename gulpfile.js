@@ -1,98 +1,108 @@
 'use strict';
 
-const 	gulp 			= require('gulp'),
-		rename 			= require("gulp-rename"),
-		browserSync 	= require('browser-sync').create(),
-		autoprefixer 	= require('gulp-autoprefixer'),
-		cleanCSS 		= require('gulp-clean-css'),
-		imagemin 		= require('gulp-imagemin'),
-		svgstore 		= require('gulp-svgstore'),
-		cheerio 		= require('gulp-cheerio'),
-		sass 			= require('gulp-sass'),
-		sourcemaps 		= require('gulp-sourcemaps'),
-		rigger 			= require('gulp-rigger'),
-		jshint 			= require('gulp-jshint'),
-		babel 			= require('gulp-babel'),
-		uglify 			= require('gulp-uglify'),
-		watch 			= require('gulp-watch'),
-		del 			= require('del');
+const php = true;
 
-const path = {
+const	gulp 					= require('gulp'),
+			rename 				= require("gulp-rename"),
+			browserSync 	= require('browser-sync').create(),
+			autoprefixer 	= require('gulp-autoprefixer'),
+			cleanCSS 			= require('gulp-clean-css'),
+			imagemin 			= require('gulp-imagemin'),
+			svgstore 			= require('gulp-svgstore'),
+			cheerio 			= require('gulp-cheerio'),
+			sass 					= require('gulp-sass'),
+			sourcemaps 		= require('gulp-sourcemaps'),
+			rigger 				= require('gulp-rigger'),
+			jshint 				= require('gulp-jshint'),
+			babel 				= require('gulp-babel'),
+			uglify 				= require('gulp-uglify'),
+			watch 				= require('gulp-watch'),
+			del 					= require('del');
+
+let appDir = './';
+let serverUrl = 'http://browsersync/';		
+
+const path = {	
 	tpl: {
-		src: 'src/*.html',
-		build: 'build/',
+		src: appDir+'src/*.html',
+		build: appDir+'build/',
 		srcDir: 'src/',
 		buildDir: 'build/',
-		watch: 'src/**/*.html',
+		watch: [appDir+'src/**/*.html'],
 	},
 	js: {
-		src: 'src/js/*.js',
-		build: 'build/js/',
+		src: appDir+'src/js/*.js',
+		build: appDir+'build/js/',
 		srcDir: 'src/js/',
 		buildDir: 'build/js/',
-		watch: ['src/js/**/*.js', '!src/js/lib/**/*.*'],
+		watch: [appDir+'src/js/**/*.js', '!'+appDir+'src/js/lib/**/*.*'],
 		vendor: {
-			src: 'src/js/lib/**/*.*',
-			build: 'build/js/lib/',
+			src: appDir+'src/js/lib/**/*.*',
+			build: appDir+'build/js/lib/',
 			srcDir: 'src/js/lib/',
 			buildDir: 'build/js/lib/',
-			watch: 'src/js/lib/**/*.*',
+			watch: [appDir+'src/js/lib/**/*.*'],
 		},
 	},
 	style: {
-		src: 'src/scss/*.scss',
-		build: 'build/css/',
+		src: appDir+'src/scss/*.scss',
+		build: appDir+'build/css/',
 		srcDir: 'src/scss/',
 		buildDir: 'build/css/',
-		watch: 'src/scss/**/*.scss',
+		watch: [appDir+'src/scss/**/*.scss', '!'+appDir+'src/scss/lib/**/*.*'],
 		vendor: {
-			src: 'src/scss/lib/**/*.*',
-			build: 'build/css/lib/',			
+			src: appDir+'src/scss/lib/**/*.*',
+			build: appDir+'build/css/lib/',			
 			srcDir: 'src/scss/lib/',
 			buildDir: 'build/css/lib/',
-			watch: 'src/scss/lib/**/*.*',
+			watch: [appDir+'src/scss/lib/**/*.*'],
 		},
 	},
 	fonts: {
-		src: 'src/fonts/**/*.*',
-		build: 'build/fonts/',
+		src: appDir+'src/fonts/**/*.*',
+		build: appDir+'build/fonts/',
 		srcDir: 'src/fonts/',
 		buildDir: 'build/fonts/',
-		watch: 'src/fonts/**/*.*',
+		watch: [appDir+'src/fonts/**/*.*'],
 	},
 	img: {
-		src: ['src/img/**/*.*', '!src/img/sprite_svg/**/*.*'],
-		build: 'build/img/',
+		src: [appDir+'src/img/**/*.*', '!'+appDir+'src/img/sprite_svg/**/*.*'],
+		build: appDir+'build/img/',
 		srcDir: 'src/img/',
 		buildDir: 'build/img/',
-		watch: ['src/img/**/*.*', '!src/img/sprite_svg/**/*.*'],
+		watch: [appDir+'src/img/**/*.*', '!'+appDir+'src/img/sprite_svg/**/*.*'],
 	},
 	svg: {
-		src: 'src/img/sprite_svg/**/*.*',
-		build: 'build/img/sprite_svg/',
+		src: appDir+'src/img/sprite_svg/**/*.*',
+		build: appDir+'build/img/sprite_svg/',
 		srcDir: 'src/img/sprite_svg/',
 		buildDir: 'build/img/sprite_svg/',
-		watch: 'src/img/sprite_svg/**/*.*',
+		watch: [appDir+'src/img/sprite_svg/**/*.*'],
 	},
-	clean: 'build',
-};
+	clean: appDir+'build',
 
+};
 
 // https://browsersync.io/docs/options
 let serverConfig = {
-	server: {
-		baseDir: "./build",
-		directory: true
-	},
-	tunnel: true,
+	// tunnel: true,	
 	browser: "chrome",
 	logPrefix: "zZZz"
 };
 
+if(php){
+	serverConfig.proxy = serverUrl;
+} else {
+	serverConfig.server = {
+		baseDir: appDir+'build',
+		directory: true
+	};
+}
+
 //Tasks
 gulp.task('tpl', function () {
 	return gulp.src(path.tpl.src) 
-		.pipe(rigger()) 
+		.pipe(rigger())
 		.pipe(gulp.dest(path.tpl.build))
 });
 gulp.task('tpl-watch', ['tpl'], function (done) {
@@ -108,13 +118,13 @@ gulp.task('js', function () {
 		.pipe(sourcemaps.init()) 
 		.pipe(babel({
 			"presets": [
-			["env", {
-				"targets": {
-					"browsers": ["last 2 versions"],
-					"uglify": true,
-				},
-			}]
-			]
+				[__dirname+'/node_modules/babel-preset-env', {
+					"targets": {
+						"browsers": ["last 2 versions"],
+						"uglify": true,
+					},
+				}],
+			],
 		}))
 		.on('error', function (err) {
 			console.log(err.message);
@@ -128,7 +138,7 @@ gulp.task('js-watch', ['js'], function (done) {
     done();
 });
 gulp.task('js-min', function () {
-	gulp.src([`${path.js.build}*.js`, `!${path.js.build}*.min.js`])   
+	gulp.src([path.js.build+'*.js', '!'+path.js.build+'*.min.js'])   
 		.pipe(uglify())
 		.pipe(rename({ suffix: '.min' }))
 		.pipe(gulp.dest(path.js.build));
@@ -151,14 +161,14 @@ gulp.task('style-watch', ['style'], function (done) {
     done();
 });
 gulp.task('style-min', function () {
-	gulp.src([`${path.style.build}*.css`, `!${path.style.build}*.min.css`])
+	gulp.src([path.style.build+'*.css', '!'+path.style.build+'*.min.css'])
 		.pipe(cleanCSS())
 		.pipe(rename({ suffix: '.min' }))
 		.pipe(gulp.dest(path.style.build));
 });
 
 gulp.task('image', function () {
-    return gulp.src(path.img.src)
+    return gulp.src( path.img.src )
         .pipe(imagemin([
         	imagemin.gifsicle({interlaced: true}),
         	imagemin.jpegtran({progressive: true}),
@@ -190,11 +200,11 @@ gulp.task('svg', function () {
 			})
 		]))
 		.pipe(svgstore({
-			includeTitleElement: false,
-			cleanup: [
-				'fill',
-			],
-		}))
+				includeTitleElement: false,
+				cleanup: [
+					'fill',
+				],
+			}))
 		.pipe(cheerio({
             run: function ($) {
                 $('svg').attr('style',  'display:none');
@@ -274,37 +284,46 @@ let watcherFile = {
 		}	
 		return false;
 	},
+	combinePath: (base, paths) => {
+		return paths.map(item => {
+			if(item[0] === '!') return '!'+base+item.substring(1);
+			return path.serverDir+path.appDir+item;	
+		});		
+	},
 }
+
 gulp.task('watch', function () {
 	let log = console.log.bind(console);
 
 	browserSync.init(serverConfig);
 
-
 	/* Templates */
-	watch(path.tpl.watch, function(event, cb) {
-        gulp.start('tpl-watch');
-    }).on('error', error => log(`Watcher error: ${error}`));
+	watch(path.tpl.watch, { read: false })
+	.on('change', () => gulp.start('tpl-watch') )
+	.on('error', error => log(`Watcher tpl error: ${error.message}`));
 
 	/* JS */
-	watch(path.js.watch, function(event, cb) {
-        gulp.start('js-watch');
-    }).on('error', error => log(`Watcher error: ${error}`));
+	watch(path.js.watch, { read: false })
+	.on('change', () => gulp.start('js-watch') )
+	.on('error', error => log(`Watcher js error: ${error.message}`));
 
-    /* Styles */
-	watch(path.style.watch, function(event, cb) {
-        gulp.start('style-watch');
-    }).on('error', error => log(`Watcher error: ${error}`));
+   /* Styles */
+	watch(path.style.watch, { read: false })
+	.on('change', () => gulp.start('style-watch') )
+	.on('error', error => log(`Watcher style error: ${error.message}`));
 
-    /* Images */
-	watch(path.img.watch, function(event, cb) {
-        gulp.start('image-watch');
-    }).on('error', error => log(`Watcher error: ${error}`));
 
-    /* SVG */
+   /* Images */
+	watch( path.img.watch, function(event, cb) {
+		gulp.start('image-watch');
+	})
+	.on('error', error => log(`Watcher image error: ${error.message}`));
+
+  /* SVG */
 	watch(path.svg.watch, function(event, cb) {
-        gulp.start('svg-watch');
-    }).on('error', error => log(`Watcher error: ${error}`));
+    gulp.start('svg-watch');
+  })
+  .on('error', error => log(`Watcher svg error: ${error.message}`));
 
 	/* JsVendor */
 	let watcherJsVendor = watch(path.js.vendor.watch);
@@ -318,7 +337,7 @@ gulp.task('watch', function () {
 	watcherJsVendor.on('unlink', function(ePath){
 		watcherFile.del(ePath, path.js.vendor.srcDir, path.js.vendor.buildDir) && browserSync.reload();
 	});
-	watcherJsVendor.on('error', error => log(`Watcher error: ${error}`));
+	watcherJsVendor.on('error', error => log(`Watcher JsV error: ${error.message}`));
 
 	/* Fonts */
 	let watcherFont = watch(path.fonts.watch);
@@ -329,8 +348,13 @@ gulp.task('watch', function () {
 	watcherFont.on('add', function(ePath,event){
 		watcherFile.add(ePath, path.fonts.srcDir, path.fonts.buildDir) && browserSync.reload();				
 	});
-	watcherJsVendor.on('unlink', function(ePath){
+	watcherFont.on('unlink', function(ePath){
 		watcherFile.del(ePath, path.fonts.srcDir, path.fonts.buildDir) && browserSync.reload();
 	});
-	watcherJsVendor.on('error', error => log(`Watcher error: ${error}`));
+	watcherFont.on('error', error => log(`Watcher Font error: ${error.message}`));
+
+	if(php){
+		watch('../**/*.php', browserSync.reload);		
+	}
+
 });
