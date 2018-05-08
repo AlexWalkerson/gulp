@@ -98,7 +98,6 @@ gulp.task('js', function () {
 		[ 'es2015-script' ],
 		],
 	}))
-	.pipe(uglify())
 	.on('error', function (err) {
 		console.log(err.message);
 		this.emit('end');
